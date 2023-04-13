@@ -61,7 +61,10 @@ class Chatbot:
         # Write a short greeting message                                 #
         ########################################################################
 
-        greeting_message = "Hi! I'm MovieBot! I'm going to recommend a movie to you. First I will ask you about your taste in movies. Tell me about a movie that you have seen."
+        greeting_message = """
+        Hi! I'm MovieBot! I'm going to recommend a movie to you. First I will ask 
+        you about your taste in movies. Tell me about a movie that you have seen.
+        """
 
         ########################################################################
         #                             END OF YOUR CODE                         #
@@ -400,17 +403,18 @@ class Chatbot:
         """
         ########################################################################
         #                          START OF YOUR CODE                          #
-        ########################################################################    
-        X_test = self.count_vectorizer.transform([user_input.lower()]).toarray()
+        ########################################################################
+        X_test = self.count_vectorizer.transform(
+            [user_input.lower()]).toarray()
         # If user_input is all 0's, return 0
         if not np.any(X_test):
             return 0
-        
+
         y_hat = self.model.predict_proba(X_test)
         if y_hat[0][0] > 0.5:
             return -1
         # Else, p_neg <= 0.5 so we return 1
-        return 1 
+        return 1
         ########################################################################
         #                          END OF YOUR CODE                            #
         ########################################################################
