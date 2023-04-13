@@ -312,7 +312,19 @@ class Chatbot:
         ########################################################################
         #                          START OF YOUR CODE                          #
         ########################################################################
-        return 0  # TODO: delete and replace this line
+        tokens = user_input.split() # For now, we tokenize by whitespace
+        
+        pos_tok_count, neg_tok_count = 0, 0
+        for token in tokens:
+            if token not in self.sentiment:
+                continue
+            elif self.sentiment[token] == 'pos':
+                pos_tok_count += 1
+            else:
+                neg_tok_count += 1
+        
+        # Taking advantage of how booleans are represented as numbers
+        return (pos_tok_count > neg_tok_count) - (pos_tok_count < neg_tok_count)
         ########################################################################
         #                          END OF YOUR CODE                            #
         ########################################################################
