@@ -47,20 +47,23 @@ class Chatbot:
 
         To exit: write ":quit" (or press Ctrl-C to force the exit)
 
-        This Chatbot is designed to make movie recommendations to the user, asking
+        MovieBot is designed to make movie recommendations to the user, asking
         them to enter the names of movies they have liked (or disliked) and prompting
         them to disambiguate between film titles when necessary. It determines 
         whether the user liked or disliked a given title by analysing what they 
-        have written, using that to predict a new movie for them to watch.
+        have written, using that to predict a new movie they might enjoy.
         """
 
     def greeting(self):
         """Return a message that the chatbot uses to greet the user."""
         ########################################################################
-        # TODO: Write a short greeting message                                 #
+        # Write a short greeting message                                 #
         ########################################################################
 
-        greeting_message = "How can I help you?"
+        greeting_message = """
+        Hi! I'm MovieBot! I'm going to recommend a movie to you. First I will ask 
+        you about your taste in movies. Tell me about a movie that you have seen.
+        """
 
         ########################################################################
         #                             END OF YOUR CODE                         #
@@ -72,10 +75,10 @@ class Chatbot:
         Return a message that the chatbot uses to bid farewell to the user.
         """
         ########################################################################
-        # TODO: Write a short farewell message                                 #
+        # Write a short farewell message                                 #
         ########################################################################
 
-        goodbye_message = "Have a nice day!"
+        goodbye_message = "Thanks! It was fun chatting with you!  "
 
         ########################################################################
         #                          END OF YOUR CODE                            #
