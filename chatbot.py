@@ -47,7 +47,11 @@ class Chatbot:
 
         To exit: write ":quit" (or press Ctrl-C to force the exit)
 
-        TODO: Write the description for your own chatbot here in the `intro()` function.
+        This Chatbot is designed to make movie recommendations to the user, asking
+        them to enter the names of movies they have liked (or disliked) and prompting
+        them to disambiguate between film titles when necessary. It determines 
+        whether the user liked or disliked a given title by analysing what they 
+        have written, using that to predict a new movie for them to watch.
         """
 
     def greeting(self):
