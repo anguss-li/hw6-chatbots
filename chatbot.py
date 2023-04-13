@@ -213,7 +213,7 @@ class Chatbot:
         # This only shows indices of movies with an EXACT match for title!
         # TODO: is this the behavior we want?
         title = re.compile(re.escape(title))
-        return [i for i, movie in enumerate(self.titles) if title.match(movie[0])]  
+        return [i for i, movie in enumerate(self.titles) if title.match(movie[0])]
         ########################################################################
         #                          END OF YOUR CODE                            #
         ########################################################################
@@ -312,8 +312,8 @@ class Chatbot:
         ########################################################################
         #                          START OF YOUR CODE                          #
         ########################################################################
-        tokens = user_input.split() # For now, we tokenize by whitespace
-        
+        tokens = user_input.split()  # For now, we tokenize by whitespace
+
         pos_tok_count, neg_tok_count = 0, 0
         for token in tokens:
             if token not in self.sentiment:
@@ -322,7 +322,7 @@ class Chatbot:
                 pos_tok_count += 1
             else:
                 neg_tok_count += 1
-        
+
         # Taking advantage of how booleans are represented as numbers
         return (pos_tok_count > neg_tok_count) - (pos_tok_count < neg_tok_count)
         ########################################################################
@@ -352,16 +352,26 @@ class Chatbot:
         texts, y = util.load_rotten_tomatoes_dataset()
 
         # variable name that will eventually be the sklearn Logistic Regression classifier you train
-        self.model = None
+        self.model = sklearn.linear_model.LogisticRegression()
         # variable name will eventually be the CountVectorizer from sklearn
-        self.count_vectorizer = None
+        self.count_vectorizer = CountVectorizer(lowercase=True,
+                                                min_df=20,  # only look at words that occur in at least 20 docs
+                                                stop_words='english',  # remove english stop words
+                                                max_features=1000,  # only select the top 1000 features
+                                                )
 
         ########################################################################
         #                          START OF YOUR CODE                          #
         ########################################################################
+        X_train = self.count_vectorizer.fit_transform(texts).toarray()
+        Y_train = np.array(y)
+        # Transforming y:
+        Y_train[Y_train == 'Fresh'], Y_train[Y_train == 'Rotten'] = 1, -1
+        Y_train = Y_train.astype('int')
 
-        pass  # TODO: delete and replace this line
-
+        assert X_train.shape[0] == Y_train.shape[0]
+        self.model.fit(X_train, Y_train)
+        return self.model.score(X_train, Y_train)  # TODO: Remove after testing
         ########################################################################
         #                          END OF YOUR CODE                            #
         ########################################################################
