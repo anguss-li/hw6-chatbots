@@ -314,17 +314,10 @@ class Chatbot:
         ########################################################################
         tokens = user_input.split()  # For now, we tokenize by whitespace
 
-        pos_tok_count, neg_tok_count = 0, 0
-        for token in tokens:
-            if token not in self.sentiment:
-                continue
-            elif self.sentiment[token] == 'pos':
-                pos_tok_count += 1
-            else:
-                neg_tok_count += 1
+        counts = Counter(self.sentiment.get(token) for token in tokens)
 
         # Taking advantage of how booleans are represented as numbers
-        return (pos_tok_count > neg_tok_count) - (pos_tok_count < neg_tok_count)
+        return (counts['pos'] > counts['neg']) - (counts['pos'] < counts['neg'])
         ########################################################################
         #                          END OF YOUR CODE                            #
         ########################################################################
@@ -407,7 +400,7 @@ class Chatbot:
         """
         ########################################################################
         #                          START OF YOUR CODE                          #
-        ########################################################################
+        ########################################################################    
         X_test = self.count_vectorizer.transform([user_input.lower()]).toarray()
         # If user_input is all 0's, return 0
         if not np.any(X_test):
