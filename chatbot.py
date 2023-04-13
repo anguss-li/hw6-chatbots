@@ -210,7 +210,10 @@ class Chatbot:
         ########################################################################
         #                          START OF YOUR CODE                          #
         ########################################################################
-        return []  # TODO: delete and replace this line
+        # This only shows indices of movies with an EXACT match for title!
+        # TODO: is this the behavior we want?
+        title = re.compile(re.escape(title))
+        return [i for i, movie in enumerate(self.titles) if title.match(movie[0])]  
         ########################################################################
         #                          END OF YOUR CODE                            #
         ########################################################################
