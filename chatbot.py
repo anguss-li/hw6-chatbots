@@ -1,35 +1,36 @@
 import numpy as np
 import argparse
 import joblib
-import re  
+import re
 import sklearn
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn import linear_model
-import nltk 
+import nltk
 from collections import defaultdict, Counter
 from typing import List, Dict, Union, Tuple
 
 import util
+
 
 class Chatbot:
     """Class that implements the chatbot for HW 6."""
 
     def __init__(self):
         # The chatbot's default name is `moviebot`.
-        self.name = 'moviebot' # TODO: Give your chatbot a new name.
+        self.name = 'moviebot'  # TODO: Give your chatbot a new name.
 
         # This matrix has the following shape: num_movies x num_users
         # The values stored in each row i and column j is the rating for
         # movie i by user j
         self.titles, self.ratings = util.load_ratings('data/ratings.txt')
-        
-        # Load sentiment words 
+
+        # Load sentiment words
         self.sentiment = util.load_sentiment_dictionary('data/sentiment.txt')
 
         # Train the classifier
         self.train_logreg_sentiment_classifier()
 
-        # TODO: put any other class variables you need here 
+        # TODO: put any other class variables you need here
 
     ############################################################################
     # 1. WARM UP REPL                                                          #
@@ -60,10 +61,7 @@ class Chatbot:
         # Write a short greeting message                                 #
         ########################################################################
 
-        greeting_message = """
-        Hi! I'm MovieBot! I'm going to recommend a movie to you. First I will ask 
-        you about your taste in movies. Tell me about a movie that you have seen.
-        """
+        greeting_message = "Hi! I'm MovieBot! I'm going to recommend a movie to you. First I will ask you about your taste in movies. Tell me about a movie that you have seen."
 
         ########################################################################
         #                             END OF YOUR CODE                         #
@@ -113,10 +111,10 @@ class Chatbot:
         Example:
           resp = chatbot.process('I loved "The Notebook" so much!!')
           print(resp) // prints 'So you loved "The Notebook", huh?'
-        
+
         Arguments: 
             - line (str): a user-supplied line of text
-        
+
         Returns: a string containing the chatbot's response to the user input
         """
         ########################################################################
@@ -156,7 +154,7 @@ class Chatbot:
           potential_titles = chatbot.extract_titles(chatbot.preprocess(
                                             'There are "Two" different "Movies" here'))
           print(potential_titles) // prints ["Two", "Movies"]                              
-    
+
         Arguments:     
             - user_input (str) : a user-supplied line of text
 
@@ -168,13 +166,15 @@ class Chatbot:
         """
         ########################################################################
         #                          START OF YOUR CODE                          #
-        ########################################################################                                             
-        return [] # TODO: delete and replace this line
+        ########################################################################
+        # Captures any possible sequence of characters between quotes
+        title_regex = r'"(.*?)"'
+        return re.findall(title_regex, user_input)
         ########################################################################
         #                          END OF YOUR CODE                            #
         ########################################################################
 
-    def find_movies_idx_by_title(self, title:str) -> list:
+    def find_movies_idx_by_title(self, title: str) -> list:
         """ Given a movie title, return a list of indices of matching movies
         The indices correspond to those in data/movies.txt.
 
@@ -209,14 +209,13 @@ class Chatbot:
         """
         ########################################################################
         #                          START OF YOUR CODE                          #
-        ########################################################################                                                 
-        return [] # TODO: delete and replace this line
+        ########################################################################
+        return []  # TODO: delete and replace this line
         ########################################################################
         #                          END OF YOUR CODE                            #
         ########################################################################
 
-
-    def disambiguate_candidates(self, clarification:str, candidates:list) -> list: 
+    def disambiguate_candidates(self, clarification: str, candidates: list) -> list:
         """Given a list of candidate movies that the user could be
         talking about (represented as indices), and a string given by the user
         as clarification (e.g. in response to your bot saying "Which movie did
@@ -254,7 +253,7 @@ class Chatbot:
               movieboth> 'I'm sorry, I still don't understand.
                             Did you mean "Three Colors: Red (Trois couleurs: Rouge) (1994)" or
                             "Three Colors: White (Trzy kolory: Bialy) (1994)" '
-    
+
         Arguments: 
             - clarification (str): user input intended to disambiguate between the given movies
             - candidates (list) : a list of movie indices
@@ -269,15 +268,15 @@ class Chatbot:
         """
         ########################################################################
         #                          START OF YOUR CODE                          #
-        ########################################################################                                                 
-        return [] # TODO: delete and replace this line
+        ########################################################################
+        return []  # TODO: delete and replace this line
         ########################################################################
         #                          END OF YOUR CODE                            #
         ########################################################################
 
     ############################################################################
     # 3. Sentiment                                                             #
-    ########################################################################### 
+    ###########################################################################
 
     def predict_sentiment_rule_based(self, user_input: str) -> int:
         """Predict the sentiment class given a user_input
@@ -297,7 +296,7 @@ class Chatbot:
         Example:
           sentiment = chatbot.predict_sentiment_rule_based('I LOVE "The Titanic"'))
           print(sentiment) // prints 1
-        
+
         Arguments: 
             - user_input (str) : a user-supplied line of text
         Returns: 
@@ -309,8 +308,8 @@ class Chatbot:
         """
         ########################################################################
         #                          START OF YOUR CODE                          #
-        ########################################################################                                                  
-        return 0 # TODO: delete and replace this line
+        ########################################################################
+        return 0  # TODO: delete and replace this line
         ########################################################################
         #                          END OF YOUR CODE                            #
         ########################################################################
@@ -322,7 +321,7 @@ class Chatbot:
         You'll have to transform the class labels (y) such that: 
             -1 inputed into sklearn corresponds to "rotten" in the dataset 
             +1 inputed into sklearn correspond to "fresh" in the dataset 
-        
+
         To run call on the command line: 
             python3 chatbot.py --train_logreg_sentiment
 
@@ -333,25 +332,26 @@ class Chatbot:
             - Review how you used sklearn to train a logistic regression classifier for HW 5.
             - Our solution uses less than about 10 lines of code. Your solution might be a bit too complicated.
             - We achieve greater than accuracy 0.7 on the training dataset. 
-        """ 
-        #load training data  
+        """
+        # load training data
         texts, y = util.load_rotten_tomatoes_dataset()
 
-        self.model = None #variable name that will eventually be the sklearn Logistic Regression classifier you train 
-        self.count_vectorizer = None #variable name will eventually be the CountVectorizer from sklearn 
+        # variable name that will eventually be the sklearn Logistic Regression classifier you train
+        self.model = None
+        # variable name will eventually be the CountVectorizer from sklearn
+        self.count_vectorizer = None
 
         ########################################################################
         #                          START OF YOUR CODE                          #
-        ########################################################################                                                
-        
-        pass # TODO: delete and replace this line
+        ########################################################################
+
+        pass  # TODO: delete and replace this line
 
         ########################################################################
         #                          END OF YOUR CODE                            #
         ########################################################################
 
-
-    def predict_sentiment_statistical(self, user_input: str) -> int: 
+    def predict_sentiment_statistical(self, user_input: str) -> int:
         """ Uses a trained bag-of-words Logistic Regression classifier to classifier the sentiment
 
         In this function you'll also uses sklearn's CountVectorizer that has been 
@@ -382,12 +382,11 @@ class Chatbot:
         """
         ########################################################################
         #                          START OF YOUR CODE                          #
-        ########################################################################                                             
-        return 0 # TODO: delete and replace this line
+        ########################################################################
+        return 0  # TODO: delete and replace this line
         ########################################################################
         #                          END OF YOUR CODE                            #
         ########################################################################
-
 
     ############################################################################
     # 4. Movie Recommendation                                                  #
@@ -421,15 +420,14 @@ class Chatbot:
             - You should be using self.ratings somewhere in this function 
             - It may be helpful to play around with util.recommend() in scratch.ipynb
             to make sure you know what this function is doing. 
-        """ 
+        """
         ########################################################################
         #                          START OF YOUR CODE                          #
-        ########################################################################                                                    
+        ########################################################################
         return [""]  # TODO: delete and replace this line
         ########################################################################
         #                          END OF YOUR CODE                            #
         ########################################################################
-
 
     ############################################################################
     # 5. Open-ended                                                            #
@@ -447,19 +445,16 @@ class Chatbot:
         TODO: delete and replace with your function.
         Be sure to put an adequate description in this docstring.  
         """
-        pass  
+        pass
 
-    def function3(): 
+    def function3():
         """
         Any additional functions beyond two count towards extra credit  
         """
-        pass 
+        pass
 
 
 if __name__ == '__main__':
     print('To run your chatbot in an interactive loop from the command line, '
           'run:')
     print('    python3 repl.py')
-
-
-
