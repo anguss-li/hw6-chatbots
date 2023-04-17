@@ -244,7 +244,7 @@ class Chatbot:
               user> '"Titanic"''
               moviebot> 'Which movie did you mean:  "Titanic (1997)" or "Titanic (1953)"?'
               user> "1997"
-              movieboth> 'Ok. You meant "Titanic (1997)"'
+              moviebot> 'Ok. You meant "Titanic (1997)"'
 
         Example 2 :
           chatbot.disambiguate_candidates("1994", [274, 275, 276]) // should return [274, 276]
@@ -330,8 +330,8 @@ class Chatbot:
         Trains a bag-of-words Logistic Regression classifier on the Rotten Tomatoes dataset 
 
         You'll have to transform the class labels (y) such that: 
-            -1 inputed into sklearn corresponds to "rotten" in the dataset 
-            +1 inputed into sklearn correspond to "fresh" in the dataset 
+            -1 inputted into sklearn corresponds to "rotten" in the dataset 
+            +1 inputted into sklearn correspond to "fresh" in the dataset 
 
         To run call on the command line: 
             python3 chatbot.py --train_logreg_sentiment
