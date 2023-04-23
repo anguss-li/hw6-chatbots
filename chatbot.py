@@ -155,12 +155,13 @@ class Chatbot:
                 # ask the user for clues for disambiguition
                 print("Did you mean: ")
                 for i in range(len(all_title_idxs) - 1):
-                    print(self.titles[all_title_idxs[i]][0], end = ", or ")
+                    print(self.titles[all_title_idxs[i]][0], end=", or ")
                 print(self.titles[all_title_idxs[-1]][0])
                 # get user input for clarification
                 clarification = input("> ")
                 # call disambiguiate and get a new index list
-                all_title_idxs = self.disambiguate_candidates(clarification, all_title_idxs)
+                all_title_idxs = self.disambiguate_candidates(
+                    clarification, all_title_idxs)
                 # if the user entered some clarification that leads to an empty List
                 if len(all_title_idxs) == 0:
                     return "I am sorry I did not understand your clarification. Can you please try again?"
@@ -170,9 +171,7 @@ class Chatbot:
         #                          END OF YOUR CODE                            #
         ########################################################################
 
-
     def get_all_title_idx(self, titles_list):
-
         """
         Given a list of titles, returns a list of list of index of all matching movies.
         """
@@ -181,7 +180,6 @@ class Chatbot:
         for item in titles_list:
             titles.extend(self.find_movies_idx_by_title(item))
         return titles
-
 
     def extract_titles(self, user_input: str) -> list:
         """Extract potential movie titles from the user input.
