@@ -17,7 +17,7 @@ class Chatbot:
 
     def __init__(self):
         # The chatbot's default name is `moviebot`.
-        self.name = 'moviebot'  # TODO: Give your chatbot a new name.
+        self.name = "film-reviewer"
 
         # This matrix has the following shape: num_movies x num_users
         # The values stored in each row i and column j is the rating for
@@ -42,7 +42,17 @@ class Chatbot:
         Consider adding to this description any information about what your
         chatbot can do and how the user can interact with it.
         """
-        return """
+
+        intro = """ Hello, I'am your personalized movie recommeding system, "Sydney".
+        I will first ask you about your movie preferences, and then use that information
+        to recommend movies. To exit the
+        program, write ":quit" and press enter.
+
+        """
+
+        return intro
+
+        """
         Your task is to implement the chatbot as detailed in the HW6
         instructions (README.md).
 
@@ -50,8 +60,8 @@ class Chatbot:
 
         MovieBot is designed to make movie recommendations to the user, asking
         them to enter the names of movies they have liked (or disliked) and prompting
-        them to disambiguate between film titles when necessary. It determines 
-        whether the user liked or disliked a given title by analysing what they 
+        them to disambiguate between film titles when necessary. It determines
+        whether the user liked or disliked a given title by analysing what they
         have written, using that to predict a new movie they might enjoy.
         """
 
@@ -62,8 +72,10 @@ class Chatbot:
         ########################################################################
 
         greeting_message = """
-        Hi! I'm MovieBot! I'm going to recommend a movie to you. First I will ask 
+        Hi! I'm film-reviewer! I'm going to recommend a movie to you. First I will ask
         you about your taste in movies. Tell me about a movie that you have seen.
+        Please write in the format, e.g
+        "I liked "[Movie name]", or I disliked "[Movie name].
         """
 
         ########################################################################
@@ -90,7 +102,7 @@ class Chatbot:
         """
         Returns debug information as a string for the line string from the REPL
 
-        No need to modify this function. 
+        No need to modify this function.
         """
         return str(line)
 
@@ -115,7 +127,7 @@ class Chatbot:
           resp = chatbot.process('I loved "The Notebook" so much!!')
           print(resp) // prints 'So you loved "The Notebook", huh?'
 
-        Arguments: 
+        Arguments:
             - line (str): a user-supplied line of text
 
         Returns: a string containing the chatbot's response to the user input
@@ -127,12 +139,49 @@ class Chatbot:
         # code in a modular fashion to make it easier to improve and debug.    #
         ########################################################################
 
-        response = "I (the chatbot) processed '{}'".format(line)
-
+        # we extract the titles from the user input
+        titles = self.extract_titles(line)
+        # we extract all the movie indexes that are associated with user input
+        all_title_idxs = self.get_all_title_idx(titles)
+        # if user did not use the parenthesis or enter a movies that does not
+        # exist in our database
+        if len(titles) == 0:
+            return "I am sorry. I did not understand. Please enter \"[Movie name]\" in quotation marks."
+        elif len(all_title_idxs) == 0:
+            return "I am sorry. The movie you entered does not exist in our repository. Please enter a new movie."
+        else:
+            # while there is some ambiguity about movie titles
+            while len(all_title_idxs) > 1:
+                # ask the user for clues for disambiguition
+                print("Did you mean: ")
+                for i in range(len(all_title_idxs) - 1):
+                    print(self.titles[all_title_idxs[i]][0], end = ", or ")
+                print(self.titles[all_title_idxs[-1]][0])
+                # get user input for clarification
+                clarification = input("> ")
+                # call disambiguiate and get a new index list
+                all_title_idxs = self.disambiguate_candidates(clarification, all_title_idxs)
+                # if the user entered some clarification that leads to an empty List
+                if len(all_title_idxs) == 0:
+                    return "I am sorry I did not understand your clarification. Can you please try again?"
+            # prompt the user about their input + ask them about theur next choice.
+            return "So you entered, " + self.titles[all_title_idxs[0]][0] + " What other movie did you like?"
         ########################################################################
         #                          END OF YOUR CODE                            #
         ########################################################################
-        return response
+
+
+    def get_all_title_idx(self, titles_list):
+
+        """
+        Given a list of titles, returns a list of list of index of all matching movies.
+        """
+
+        titles = []
+        for item in titles_list:
+            titles.extend(self.find_movies_idx_by_title(item))
+        return titles
+
 
     def extract_titles(self, user_input: str) -> list:
         """Extract potential movie titles from the user input.
@@ -153,19 +202,19 @@ class Chatbot:
                                             'I liked "The Notebook" a lot.'))
           print(potential_titles) // prints ["The Notebook"]
 
-        Example 3: 
+        Example 3:
           potential_titles = chatbot.extract_titles(chatbot.preprocess(
                                             'There are "Two" different "Movies" here'))
-          print(potential_titles) // prints ["Two", "Movies"]                              
+          print(potential_titles) // prints ["Two", "Movies"]
 
-        Arguments:     
+        Arguments:
             - user_input (str) : a user-supplied line of text
 
-        Returns: 
+        Returns:
             - (list) movie titles that are potentially in the text
 
-        Hints: 
-            - What regular expressions would be helpful here? 
+        Hints:
+            - What regular expressions would be helpful here?
         """
         ########################################################################
         #                          START OF YOUR CODE                          #
@@ -197,18 +246,18 @@ class Chatbot:
           print(ids) // prints [31]
 
         Arguments:
-            - title (str): the movie title 
+            - title (str): the movie title
 
-        Returns: 
+        Returns:
             - a list of indices of matching movies
 
-        Hints: 
+        Hints:
             - You should use self.titles somewhere in this function.
               It might be helpful to explore self.titles in scratch.ipynb
-            - You might find one or more of the following helpful: 
+            - You might find one or more of the following helpful:
               re.search, re.findall, re.match, re.escape, re.compile
-            - Our solution only takes about 7 lines. If you're using much more than that try to think 
-              of a more concise approach 
+            - Our solution only takes about 7 lines. If you're using much more than that try to think
+              of a more concise approach
         """
         ########################################################################
         #                          START OF YOUR CODE                          #
@@ -232,14 +281,14 @@ class Chatbot:
 
         - If the clarification uniquely identifies one of the movies, this
         should return a 1-element list with the index of that movie.
-        - If the clarification does not uniquely identify one of the movies, this 
-        should return multiple elements in the list which the clarification could 
-        be referring to. 
+        - If the clarification does not uniquely identify one of the movies, this
+        should return multiple elements in the list which the clarification could
+        be referring to.
 
         Example 1 :
           chatbot.disambiguate_candidates("1997", [1359, 2716]) // should return [1359]
 
-          Used in the middle of this sample dialogue 
+          Used in the middle of this sample dialogue
               moviebot> 'Tell me one movie you liked.'
               user> '"Titanic"''
               moviebot> 'Which movie did you mean:  "Titanic (1997)" or "Titanic (1953)"?'
@@ -253,29 +302,34 @@ class Chatbot:
               moviebot> 'Tell me one movie you liked.'
               user> '"Three Colors"''
               moviebot> 'Which movie did you mean:  "Three Colors: Red (Trois couleurs: Rouge) (1994)"
-                 or "Three Colors: Blue (Trois couleurs: Bleu) (1993)" 
+                 or "Three Colors: Blue (Trois couleurs: Bleu) (1993)"
                  or "Three Colors: White (Trzy kolory: Bialy) (1994)"?'
               user> "1994"
               movieboth> 'I'm sorry, I still don't understand.
                             Did you mean "Three Colors: Red (Trois couleurs: Rouge) (1994)" or
                             "Three Colors: White (Trzy kolory: Bialy) (1994)" '
 
-        Arguments: 
+        Arguments:
             - clarification (str): user input intended to disambiguate between the given movies
             - candidates (list) : a list of movie indices
 
-        Returns: 
+        Returns:
             - a list of indices corresponding to the movies identified by the clarification
 
-        Hints: 
-            - You should use self.titles somewhere in this function 
-            - You might find one or more of the following helpful: 
+        Hints:
+            - You should use self.titles somewhere in this function
+            - You might find one or more of the following helpful:
               re.search, re.findall, re.match, re.escape, re.compile
         """
         ########################################################################
         #                          START OF YOUR CODE                          #
         ########################################################################
-        return []  # TODO: delete and replace this line
+        title = []
+        for idx in candidates:
+            # if clarification string in the title, include the title
+            if bool(re.search(clarification, self.titles[idx][0])):
+                title.append(idx)
+        return title
         ########################################################################
         #                          END OF YOUR CODE                            #
         ########################################################################
@@ -287,14 +341,14 @@ class Chatbot:
     def predict_sentiment_rule_based(self, user_input: str) -> int:
         """Predict the sentiment class given a user_input
 
-        In this function you will use a simple rule-based approach to 
-        predict sentiment. 
+        In this function you will use a simple rule-based approach to
+        predict sentiment.
 
-        Use the sentiment words from data/sentiment.txt which we have already loaded for you in self.sentiment. 
-        Then count the number of tokens that are in the positive sentiment category (pos_tok_count) 
+        Use the sentiment words from data/sentiment.txt which we have already loaded for you in self.sentiment.
+        Then count the number of tokens that are in the positive sentiment category (pos_tok_count)
         and negative sentiment category (neg_tok_count)
 
-        This function should return 
+        This function should return
         -1 (negative sentiment): if neg_tok_count > pos_tok_count
         0 (neural): if neg_tok_count is equal to pos_tok_count
         +1 (postive sentiment): if neg_tok_count < pos_tok_count
@@ -303,12 +357,12 @@ class Chatbot:
           sentiment = chatbot.predict_sentiment_rule_based('I LOVE "The Titanic"'))
           print(sentiment) // prints 1
 
-        Arguments: 
+        Arguments:
             - user_input (str) : a user-supplied line of text
-        Returns: 
+        Returns:
             - (int) a numerical value (-1, 0 or 1) for the sentiment of the text
 
-        Hints: 
+        Hints:
             - Take a look at self.sentiment (e.g. in scratch.ipynb)
             - Remember we want the count of *tokens* not *types*
         """
@@ -327,22 +381,22 @@ class Chatbot:
 
     def train_logreg_sentiment_classifier(self):
         """
-        Trains a bag-of-words Logistic Regression classifier on the Rotten Tomatoes dataset 
+        Trains a bag-of-words Logistic Regression classifier on the Rotten Tomatoes dataset
 
-        You'll have to transform the class labels (y) such that: 
-            -1 inputted into sklearn corresponds to "rotten" in the dataset 
-            +1 inputted into sklearn correspond to "fresh" in the dataset 
+        You'll have to transform the class labels (y) such that:
+            -1 inputted into sklearn corresponds to "rotten" in the dataset
+            +1 inputted into sklearn correspond to "fresh" in the dataset
 
-        To run call on the command line: 
+        To run call on the command line:
             python3 chatbot.py --train_logreg_sentiment
 
-        Hints: 
+        Hints:
             - Review how we used CountVectorizer from sklearn in this code
                 https://github.com/cs375williams/hw3-logistic-regression/blob/main/util.py#L193
             - You'll want to lowercase the texts
             - Review how you used sklearn to train a logistic regression classifier for HW 5.
             - Our solution uses less than about 10 lines of code. Your solution might be a bit too complicated.
-            - We achieve greater than accuracy 0.7 on the training dataset. 
+            - We achieve greater than accuracy 0.7 on the training dataset.
         """
         # load training data
         texts, y = util.load_rotten_tomatoes_dataset()
@@ -375,12 +429,12 @@ class Chatbot:
     def predict_sentiment_statistical(self, user_input: str) -> int:
         """ Uses a trained bag-of-words Logistic Regression classifier to classifier the sentiment
 
-        In this function you'll also uses sklearn's CountVectorizer that has been 
+        In this function you'll also uses sklearn's CountVectorizer that has been
         fit on the training data to get bag-of-words representation.
 
         Example 1:
             sentiment = chatbot.predict_sentiment_statistical('This is great!')
-            print(sentiment) // prints 1 
+            print(sentiment) // prints 1
 
         Example 2:
             sentiment = chatbot.predict_sentiment_statistical('This movie is the worst')
@@ -390,16 +444,16 @@ class Chatbot:
             sentiment = chatbot.predict_sentiment_statistical('blah')
             print(sentiment) // prints 0
 
-        Arguments: 
+        Arguments:
             - user_input (str) : a user-supplied line of text
-        Returns: int 
-            -1 if the trained classifier predicts -1 
-            1 if the trained classifier predicts 1 
+        Returns: int
+            -1 if the trained classifier predicts -1
+            1 if the trained classifier predicts 1
             0 if the input has no words in the vocabulary of CountVectorizer (a row of 0's)
 
-        Hints: 
-            - Be sure to lower-case the user input 
-            - Don't forget about a case for the 0 class! 
+        Hints:
+            - Be sure to lower-case the user input
+            - Don't forget about a case for the 0 class!
         """
         ########################################################################
         #                          START OF YOUR CODE                          #
@@ -425,32 +479,32 @@ class Chatbot:
 
     def recommend_movies(self, user_ratings: dict, num_return: int = 3) -> List[str]:
         """
-        This function takes user_ratings and returns a list of strings of the 
-        recommended movie titles. 
+        This function takes user_ratings and returns a list of strings of the
+        recommended movie titles.
 
-        Be sure to call util.recommend() which has implemented collaborative 
+        Be sure to call util.recommend() which has implemented collaborative
         filtering for you. Collaborative filtering takes ratings from other users
-        and makes a recommendation based on the small number of movies the current user has rated.  
+        and makes a recommendation based on the small number of movies the current user has rated.
 
-        This function must have at least 5 ratings to make a recommendation. 
+        This function must have at least 5 ratings to make a recommendation.
 
-        Arguments: 
-            - user_ratings (dict): 
-                - keys are indices of movies 
-                  (corresponding to rows in both data/movies.txt and data/ratings.txt) 
-                - values are 1, 0, and -1 corresponding to positive, neutral, and 
+        Arguments:
+            - user_ratings (dict):
+                - keys are indices of movies
+                  (corresponding to rows in both data/movies.txt and data/ratings.txt)
+                - values are 1, 0, and -1 corresponding to positive, neutral, and
                   negative sentiment respectively
             - num_return (optional, int): The number of movies to recommend
 
-        Example: 
+        Example:
             bot_recommends = chatbot.recommend_movie({100: 1, 202: -1, 303: 1, 404:1, 505: 1})
-            print(bot_recommends) // prints ['Trick or Treat (1986)', 'Dunston Checks In (1996)', 
+            print(bot_recommends) // prints ['Trick or Treat (1986)', 'Dunston Checks In (1996)',
             'Problem Child (1990)']
 
-        Hints: 
-            - You should be using self.ratings somewhere in this function 
+        Hints:
+            - You should be using self.ratings somewhere in this function
             - It may be helpful to play around with util.recommend() in scratch.ipynb
-            to make sure you know what this function is doing. 
+            to make sure you know what this function is doing.
         """
         ########################################################################
         #                          START OF YOUR CODE                          #
@@ -467,20 +521,20 @@ class Chatbot:
     def function1():
         """
         TODO: delete and replace with your function.
-        Be sure to put an adequate description in this docstring.  
+        Be sure to put an adequate description in this docstring.
         """
         pass
 
     def function2():
         """
         TODO: delete and replace with your function.
-        Be sure to put an adequate description in this docstring.  
+        Be sure to put an adequate description in this docstring.
         """
         pass
 
     def function3():
         """
-        Any additional functions beyond two count towards extra credit  
+        Any additional functions beyond two count towards extra credit
         """
         pass
 
