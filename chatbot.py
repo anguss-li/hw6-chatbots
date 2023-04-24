@@ -43,7 +43,7 @@ class Chatbot:
         chatbot can do and how the user can interact with it.
         """
 
-        intro = """ Hello, I'am your personalized movie recommeding system, "Sydney".
+        intro = """ Hello, I'am your personalized movie recommending system, "Sydney".
         I will first ask you about your movie preferences, and then use that information
         to recommend movies. To exit the
         program, write ":quit" and press enter.
@@ -152,20 +152,20 @@ class Chatbot:
         else:
             # while there is some ambiguity about movie titles
             while len(all_title_idxs) > 1:
-                # ask the user for clues for disambiguition
+                # ask the user for clues for disambiguation
                 print("Did you mean: ")
                 for i in range(len(all_title_idxs) - 1):
                     print(self.titles[all_title_idxs[i]][0], end=", or ")
                 print(self.titles[all_title_idxs[-1]][0])
                 # get user input for clarification
                 clarification = input("> ")
-                # call disambiguiate and get a new index list
+                # call disambiguate and get a new index list
                 all_title_idxs = self.disambiguate_candidates(
                     clarification, all_title_idxs)
                 # if the user entered some clarification that leads to an empty List
                 if len(all_title_idxs) == 0:
                     return "I am sorry I did not understand your clarification. Can you please try again?"
-            # prompt the user about their input + ask them about theur next choice.
+            # prompt the user about their input + ask them about their next choice.
             return "So you entered, " + self.titles[all_title_idxs[0]][0] + " What other movie did you like?"
         ########################################################################
         #                          END OF YOUR CODE                            #

@@ -3,6 +3,7 @@
         "astype",
         "Bleu",
         "couleurs",
+        "idxs",
         "ipynb",
         "joblib",
         "kolory",
