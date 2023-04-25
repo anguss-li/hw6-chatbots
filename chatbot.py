@@ -143,46 +143,50 @@ class Chatbot:
         ########################################################################
         no_title = "I am sorry. I did not understand. Please enter \"[Movie name]\" in quotation marks."
         no_movie = "I am sorry. The movie you entered does not exist in our repository. Please enter a new movie."
+        
+        if self.next_recc >= len(self.recommendations):
+            self.goodbye()
 
-        if len(self.user_ratings) < 5:
-            # we extract the titles from the user input
-            titles = self.extract_titles(line)
-            # we extract all the movie indexes that are associated with user input
-            all_title_idxs = self.get_all_title_idx(titles)
-            # if user did not use the parenthesis or enter a movies that does not
-            # exist in our database
-            if len(titles) == 0:
-                return no_title
-            elif len(all_title_idxs) == 0:
-                return no_movie
-            # disambiguate movie titles
-            while len(all_title_idxs) > 1:
-                # ask the user for clues for disambiguation
-                print("Did you mean:")
-                print(", or \n".join(
-                        self.find_movies_title_by_idx(all_title_idxs)) + "?")
+        if len(self.user_ratings) > 4 and not self.recommendations:
+            self.recommendations = self.recommend_movies(self.user_ratings)
+        elif self.recommendations:
+            print("Thanks! That's enough for me to make a recommendation. ")
+            print("I suggest you watch", self.recommendations[self.next_recc] + ".")
+            self.next_recc += 1
+            return "Would you like to hear another recommendation? (Or enter :quit if you're done.)"
 
-                # get user input for clarification
-                clarification = input("> ")
+        # we extract the titles from the user input
+        titles = self.extract_titles(line)
+        # we extract all the movie indexes that are associated with user input
+        all_title_idxs = self.get_all_title_idx(titles)
+        # if user did not use the parenthesis or enter a movies that does not
+        # exist in our database
+        if len(titles) == 0:
+            return no_title
+        elif len(all_title_idxs) == 0:
+            return no_movie
+        # disambiguate movie titles
+        while len(all_title_idxs) > 1:
+            # ask the user for clues for disambiguation
+            print("Did you mean:")
+            print(", or \n".join(
+                    self.find_movies_title_by_idx(all_title_idxs)) + "?")
 
-                # call disambiguate and get a new index list
-                all_title_idxs = self.disambiguate_candidates(
-                    clarification, all_title_idxs)
+            # get user input for clarification
+            clarification = input("> ")
 
-                # if the user entered some clarification that leads to an empty List
-                if not all_title_idxs:
-                    return "I am sorry, I did not understand your clarification. Can you please try again?"
-            # prompt the user about their input + ask them about their next choice.
-            user_idx = all_title_idxs[0]
-            user_title = self.get_title(user_idx)
-            self.user_ratings[user_idx] = self.predict_sentiment_statistical(user_title)
-            return "So you entered, " + user_title + ". What is another movie you liked?"
+            # call disambiguate and get a new index list
+            all_title_idxs = self.disambiguate_candidates(
+                clarification, all_title_idxs)
 
-        self.recommendations = self.recommend_movies(self.user_ratings)
-        print("Thanks! That's enough for me to make a recommendation. ")
-        print("I suggest you watch", self.recommendations[self.next_recc] + ".")
-        self.next_recc += 1
-        return "Would you like to hear another recommendation? (Or enter :quit if you're done.)"
+            # if the user entered some clarification that leads to an empty List
+            if not all_title_idxs:
+                return "I am sorry, I did not understand your clarification. Can you please try again?"
+        # prompt the user about their input + ask them about their next choice.
+        user_idx = all_title_idxs[0]
+        user_title = self.get_title(user_idx)
+        self.user_ratings[user_idx] = self.predict_sentiment_statistical(user_title)
+        return f"So you entered {user_title}. What is another movie you liked?"
 
         ########################################################################
         #                          END OF YOUR CODE                            #
