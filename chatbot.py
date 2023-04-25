@@ -31,6 +31,9 @@ class Chatbot:
         self.train_logreg_sentiment_classifier()
 
         # TODO: put any other class variables you need here
+        self.user_ratings = {}
+        self.recommendations = []
+        self.next_recc = 0
 
     ############################################################################
     # 1. WARM UP REPL                                                          #
@@ -138,43 +141,56 @@ class Chatbot:
         # directly based on how modular it is, we highly recommended writing   #
         # code in a modular fashion to make it easier to improve and debug.    #
         ########################################################################
+        no_title = "I am sorry. I did not understand. Please enter \"[Movie name]\" in quotation marks."
+        no_movie = "I am sorry. The movie you entered does not exist in our repository. Please enter a new movie."
 
-        # we extract the titles from the user input
-        titles = self.extract_titles(line)
-        # we extract all the movie indexes that are associated with user input
-        all_title_idxs = self.get_all_title_idx(titles)
-        # if user did not use the parenthesis or enter a movies that does not
-        # exist in our database
-        if len(titles) == 0:
-            return "I am sorry. I did not understand. Please enter \"[Movie name]\" in quotation marks."
-        elif len(all_title_idxs) == 0:
-            return "I am sorry. The movie you entered does not exist in our repository. Please enter a new movie."
-        else:
-            # while there is some ambiguity about movie titles
+        if len(self.user_ratings) < 5:
+            # we extract the titles from the user input
+            titles = self.extract_titles(line)
+            # we extract all the movie indexes that are associated with user input
+            all_title_idxs = self.get_all_title_idx(titles)
+            # if user did not use the parenthesis or enter a movies that does not
+            # exist in our database
+            if len(titles) == 0:
+                return no_title
+            elif len(all_title_idxs) == 0:
+                return no_movie
+            # disambiguate movie titles
             while len(all_title_idxs) > 1:
                 # ask the user for clues for disambiguation
-                print("Did you mean: ")
+                print("Did you mean:")
                 print(", or \n".join(
-                    self.find_movies_title_by_idx(all_title_idxs)) + "?")
+                        self.find_movies_title_by_idx(all_title_idxs)) + "?")
+
                 # get user input for clarification
                 clarification = input("> ")
+
                 # call disambiguate and get a new index list
                 all_title_idxs = self.disambiguate_candidates(
                     clarification, all_title_idxs)
+
                 # if the user entered some clarification that leads to an empty List
-                if len(all_title_idxs) == 0:
+                if not all_title_idxs:
                     return "I am sorry, I did not understand your clarification. Can you please try again?"
             # prompt the user about their input + ask them about their next choice.
-            return "So you entered, " + self.get_title(all_title_idxs[0]) + ". What is another movie you liked?"
+            user_idx = all_title_idxs[0]
+            user_title = self.get_title(user_idx)
+            self.user_ratings[user_idx] = self.predict_sentiment_statistical(user_title)
+            return "So you entered, " + user_title + ". What is another movie you liked?"
+
+        self.recommendations = self.recommend_movies(self.user_ratings)
+        print("Thanks! That's enough for me to make a recommendation. ")
+        print("I suggest you watch", self.recommendations[self.next_recc] + ".")
+        self.next_recc += 1
+        return "Would you like to hear another recommendation? (Or enter :quit if you're done.)"
+
         ########################################################################
         #                          END OF YOUR CODE                            #
         ########################################################################
-
     def get_all_title_idx(self, titles_list):
         """
         Given a list of titles, returns a list of list of index of all matching movies.
         """
-
         titles = []
         for item in titles_list:
             titles.extend(self.find_movies_idx_by_title(item))
