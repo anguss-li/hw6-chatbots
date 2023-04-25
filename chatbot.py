@@ -140,10 +140,7 @@ class Chatbot:
         # possibly calling other functions. Although your code is not graded   #
         # directly based on how modular it is, we highly recommended writing   #
         # code in a modular fashion to make it easier to improve and debug.    #
-        ########################################################################
-        no_title = "I am sorry. I did not understand. Please enter \"[Movie name]\" in quotation marks."
-        no_movie = "I am sorry. The movie you entered does not exist in our repository. Please enter a new movie."
-        
+        ########################################################################  
         if self.next_recc >= len(self.recommendations):
             self.goodbye()
 
@@ -162,9 +159,9 @@ class Chatbot:
         # if user did not use the parenthesis or enter a movies that does not
         # exist in our database
         if len(titles) == 0:
-            return no_title
+            return "I am sorry. I did not understand. Please enter \"[Movie name]\" in quotation marks."
         elif len(all_title_idxs) == 0:
-            return no_movie
+            return "I am sorry. The movie you entered does not exist in our repository. Please enter a new movie."
         # disambiguate movie titles
         while len(all_title_idxs) > 1:
             # ask the user for clues for disambiguation
