@@ -154,9 +154,8 @@ class Chatbot:
             while len(all_title_idxs) > 1:
                 # ask the user for clues for disambiguation
                 print("Did you mean: ")
-                for i in range(len(all_title_idxs) - 1):
-                    print(self.titles[all_title_idxs[i]][0], end=", or ")
-                print(self.titles[all_title_idxs[-1]][0])
+                print(", or \n".join(
+                    self.find_movies_title_by_idx(all_title_idxs)) + "?")
                 # get user input for clarification
                 clarification = input("> ")
                 # call disambiguate and get a new index list
@@ -164,9 +163,9 @@ class Chatbot:
                     clarification, all_title_idxs)
                 # if the user entered some clarification that leads to an empty List
                 if len(all_title_idxs) == 0:
-                    return "I am sorry I did not understand your clarification. Can you please try again?"
+                    return "I am sorry, I did not understand your clarification. Can you please try again?"
             # prompt the user about their input + ask them about their next choice.
-            return "So you entered, " + self.titles[all_title_idxs[0]][0] + " What other movie did you like?"
+            return "So you entered, " + self.get_title(all_title_idxs[0]) + ". What is another movie you liked?"
         ########################################################################
         #                          END OF YOUR CODE                            #
         ########################################################################
@@ -223,6 +222,31 @@ class Chatbot:
         ########################################################################
         #                          END OF YOUR CODE                            #
         ########################################################################
+
+    def find_movies_title_by_idx(self, idxs: List[int]) -> List[str]:
+        """Given a list of indices, return a list of titles of matching movies
+        The titles correspond to those in data/movies.txt.
+
+        (We're adding this little helper function to make things cleaner)
+
+        Args:
+            idxs (List[int]): the list of movie indices to be matched to titles
+
+        Returns:
+            List[str]: the corresponding titles.
+        """
+        return [self.get_title(i) for i in idxs]
+
+    def get_title(self, idx: int) -> str:
+        """Quick helper function to abstract accessing self.titles.
+
+        Args:
+            idx (int): the index to be matched to title.
+
+        Returns:
+            str: the corresponding title in self.titles.
+        """
+        return self.titles[idx][0]
 
     def find_movies_idx_by_title(self, title: str) -> list:
         """ Given a movie title, return a list of indices of matching movies
@@ -322,12 +346,8 @@ class Chatbot:
         ########################################################################
         #                          START OF YOUR CODE                          #
         ########################################################################
-        title = []
-        for idx in candidates:
-            # if clarification string in the title, include the title
-            if bool(re.search(clarification, self.titles[idx][0])):
-                title.append(idx)
-        return title
+        # if clarification string in the title, include the title
+        return [i for i in candidates if re.search(clarification, self.get_title(i))]
         ########################################################################
         #                          END OF YOUR CODE                            #
         ########################################################################
@@ -495,7 +515,7 @@ class Chatbot:
             - num_return (optional, int): The number of movies to recommend
 
         Example:
-            bot_recommends = chatbot.recommend_movie({100: 1, 202: -1, 303: 1, 404:1, 505: 1})
+            bot_recommends = chatbot.recommend_movies({100: 1, 202: -1, 303: 1, 404:1, 505: 1})
             print(bot_recommends) // prints ['Trick or Treat (1986)', 'Dunston Checks In (1996)',
             'Problem Child (1990)']
 
@@ -507,7 +527,24 @@ class Chatbot:
         ########################################################################
         #                          START OF YOUR CODE                          #
         ########################################################################
-        return [""]  # TODO: delete and replace this line
+        # user_rating_all_movies is a 1-D numpy array of length i for the i total
+        # movies in self.ratings. Each index x corresponds to the movie in the
+        # x'th row of self.ratings.
+        #
+        # The array contains 0s for all movies NOT rated by the user according
+        # to user_ratings. Otherwise, a given index in the array will contain
+        # the binary rating (1 or -1) given by the user for that movie.
+        user_rating_all_movies = np.zeros(shape=self.ratings.shape[0])
+        # Populating using the ratings given by user
+        for i in user_ratings:
+            user_rating_all_movies[i] = user_ratings[i]
+
+        recommendations = util.recommend(user_rating_all_movies=user_rating_all_movies,
+                                         ratings_matrix=util.binarize(
+                                             self.ratings),
+                                         num_return=num_return)
+
+        return self.find_movies_title_by_idx(recommendations)
         ########################################################################
         #                          END OF YOUR CODE                            #
         ########################################################################
