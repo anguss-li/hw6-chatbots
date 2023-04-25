@@ -183,7 +183,7 @@ class Chatbot:
         user_idx = all_title_idxs[0]
         user_title = self.get_title(user_idx)
         self.user_ratings[user_idx] = self.predict_sentiment_statistical(user_title)
-        return f"So you entered {user_title}. What is another movie you liked?"
+        return f"So you entered {user_title}. What is another movie you've watched?"
 
         ########################################################################
         #                          END OF YOUR CODE                            #
