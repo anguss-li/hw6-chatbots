@@ -557,8 +557,7 @@ class Chatbot:
             user_rating_all_movies[i] = user_ratings[i]
 
         recommendations = util.recommend(user_rating_all_movies=user_rating_all_movies,
-                                         ratings_matrix=util.binarize(
-                                             self.ratings),
+                                         ratings_matrix=self.ratings,
                                          num_return=num_return)
 
         return self.find_movies_title_by_idx(recommendations)
