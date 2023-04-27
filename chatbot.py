@@ -408,8 +408,11 @@ class Chatbot:
 
         counts = Counter(self.sentiment.get(token) for token in tokens)
 
-        # Taking advantage of how booleans are represented as numbers
-        return (counts['pos'] > counts['neg']) - (counts['pos'] < counts['neg'])
+        if counts['neg'] > counts['pos']:
+            return -1
+        elif counts['neg'] < counts['pos']:
+            return 1
+        return 0
         ########################################################################
         #                          END OF YOUR CODE                            #
         ########################################################################
