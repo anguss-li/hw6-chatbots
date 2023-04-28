@@ -31,6 +31,7 @@ class Chatbot:
         self.train_logreg_sentiment_classifier()
 
         # TODO: put any other class variables you need here
+        self.all_title_idxs = []
         self.user_ratings = {}
         self.recommendations = []
 
@@ -140,32 +141,36 @@ class Chatbot:
         # directly based on how modular it is, we highly recommended writing   #
         # code in a modular fashion to make it easier to improve and debug.    #
         ########################################################################
-        # we extract the titles from the user input
-        titles = self.extract_titles(line)
-        # we extract all the movie indexes that are associated with user input
-        all_title_idxs = self.get_all_title_idx(titles)
-        
-        # If user did not use quotes
-        if len(titles) == 0:
-            return "I am sorry. I did not understand. Please enter \"[Movie name]\" in quotation marks."
-        # If they enter a movie that does not exist in our database
-        elif len(all_title_idxs) == 0:
-            return "I am sorry. The movie you entered does not exist in our repository. Please enter a new movie."
-        
-        # If needed, ask the user for clues for disambiguation
-        if len(all_title_idxs) > 1:
-            # we disambiguate first in case we've already asked for clarification
-            all_title_idxs = self.disambiguate_candidates(line, all_title_idxs)
-            # If still no luck, we ask for clarification
-            if len(all_title_idxs) > 1:
-                return "Did you mean:" + ", or \n".join(
-                    self.find_movies_title_by_idx(all_title_idxs)) + "?"
+        if len(self.all_title_idxs) > 1:
+            # Since all_title_idxs has not been modified yet this iteration of
+            # the loop, if it has more than one element then we know we asked
+            # for a clarification last iteration, so we treat user_input as such
+            self.all_title_idxs = self.disambiguate_candidates(
+                line, self.all_title_idxs)
+        else:
+            # This is a new movie. We extract the titles from the user input
+            # and all the indexes associated with said input
+            titles = self.extract_titles(line)
 
-        user_idx = all_title_idxs[0]
-        user_title = self.get_title(user_idx)
-        self.user_ratings[user_idx] = self.predict_sentiment_statistical(
-            user_title)
-        
+            # If user did not use quotes
+            if len(titles) == 0:
+                return "I am sorry. I did not understand. Please enter \"[Movie name]\" in quotation marks."
+
+            self.all_title_idxs = self.get_all_title_idx(titles)
+
+        # If they enter a movie that does not exist in our database
+        if len(self.all_title_idxs) == 0:
+            return "I am sorry. The movie you entered does not exist in our repository. Please enter a new movie."
+
+        # If needed, ask the user for clues for disambiguation
+        if len(self.all_title_idxs) > 1:
+            return "Did you mean: \n" + ", or \n".join(
+                self.find_movies_title_by_idx(self.all_title_idxs)) + "?"
+
+        # Predict the sentiment of the user regarding the movie given their input
+        user_idx = self.all_title_idxs[0]
+        self.user_ratings[user_idx] = self.predict_sentiment_statistical(line)
+
         if len(self.user_ratings) >= 5 and not self.recommendations:
             self.recommendations = self.recommend_movies(self.user_ratings)
             next_recc = 0
@@ -181,9 +186,9 @@ class Chatbot:
                 if next_recc >= len(self.recommendations):
                     return "That's all of the recommendations I have! Enter ':quit' if you're done."
             return "It was nice chatting with you! Enter ':quit' if you're done."
-        
+
         # prompt the user about their input + ask them about their next choice.
-        return f"So you entered {user_title}. What is another movie you've watched?"
+        return f"So you entered {self.get_title(user_idx)}. What is another movie you've watched?"
 
         ########################################################################
         #                          END OF YOUR CODE                            #
