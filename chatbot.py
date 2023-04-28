@@ -406,7 +406,7 @@ class Chatbot:
         ########################################################################
         tokens = user_input.split()  # For now, we tokenize by whitespace
 
-        counts = Counter(self.sentiment.get(token) for token in tokens)
+        counts = Counter(self.sentiment.get(token.lower()) for token in tokens)
 
         if counts['neg'] > counts['pos']:
             return -1
