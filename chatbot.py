@@ -144,6 +144,8 @@ class Chatbot:
         titles = self.extract_titles(line)
         # we extract all the movie indexes that are associated with user input
         all_title_idxs = self.get_all_title_idx(titles)
+        # call disambiguate proactively in case last time we asked for a clarification
+        all_title_idxs = self.disambiguate_candidates(line, all_title_idxs)
         # if user did not use the parenthesis or enter a movies that does not
         # exist in our database
         if len(titles) == 0:
@@ -151,23 +153,11 @@ class Chatbot:
         elif len(all_title_idxs) == 0:
             return "I am sorry. The movie you entered does not exist in our repository. Please enter a new movie."
         # disambiguate movie titles
-        while len(all_title_idxs) > 1:
+        if len(all_title_idxs) > 1:
             # ask the user for clues for disambiguation
-            print("Did you mean:")
-            print(", or \n".join(
-                self.find_movies_title_by_idx(all_title_idxs)) + "?")
+            return "Did you mean:" + ", or \n".join(
+                self.find_movies_title_by_idx(all_title_idxs)) + "?"
 
-            # get user input for clarification
-            clarification = input("> ")
-
-            # call disambiguate and get a new index list
-            all_title_idxs = self.disambiguate_candidates(
-                clarification, all_title_idxs)
-
-            # if the user entered some clarification that leads to an empty List
-            if not all_title_idxs:
-                return "I am sorry, I did not understand your clarification. Can you please try again?"
-        # prompt the user about their input + ask them about their next choice.
         user_idx = all_title_idxs[0]
         user_title = self.get_title(user_idx)
         self.user_ratings[user_idx] = self.predict_sentiment_statistical(
@@ -189,6 +179,7 @@ class Chatbot:
                     return "That's all of the recommendations I have! Enter ':quit' if you're done."
             return "It was nice chatting with you! Enter ':quit' if you're done."
         
+        # prompt the user about their input + ask them about their next choice.
         return f"So you entered {user_title}. What is another movie you've watched?"
 
         ########################################################################
