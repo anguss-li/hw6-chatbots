@@ -35,7 +35,13 @@ Can you think of ways that designers of the chatbot can help to mitigate this ri
 
 Q2_your_answer = """
 
-Delete and put your answer here
+Our chatbot does not currently store information about the user such as their preferences, 
+name, and instances of prior interaction with out bot. This greatly reduces the risk of 
+leaking private information. However, a number of modern chatbots store information about 
+users on their servers, so that they can provide personalized content. However any such data 
+must be collected with explicit approval from the user, and attempts should be made from 
+encouraging users to implement strong passwords, to using secure networking, and storage 
+techniques.  
 
 """
 
