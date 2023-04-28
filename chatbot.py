@@ -144,19 +144,22 @@ class Chatbot:
         titles = self.extract_titles(line)
         # we extract all the movie indexes that are associated with user input
         all_title_idxs = self.get_all_title_idx(titles)
-        # call disambiguate proactively in case last time we asked for a clarification
-        all_title_idxs = self.disambiguate_candidates(line, all_title_idxs)
-        # if user did not use the parenthesis or enter a movies that does not
-        # exist in our database
+        
+        # If user did not use quotes
         if len(titles) == 0:
             return "I am sorry. I did not understand. Please enter \"[Movie name]\" in quotation marks."
+        # If they enter a movie that does not exist in our database
         elif len(all_title_idxs) == 0:
             return "I am sorry. The movie you entered does not exist in our repository. Please enter a new movie."
-        # disambiguate movie titles
+        
+        # If needed, ask the user for clues for disambiguation
         if len(all_title_idxs) > 1:
-            # ask the user for clues for disambiguation
-            return "Did you mean:" + ", or \n".join(
-                self.find_movies_title_by_idx(all_title_idxs)) + "?"
+            # we disambiguate first in case we've already asked for clarification
+            all_title_idxs = self.disambiguate_candidates(line, all_title_idxs)
+            # If still no luck, we ask for clarification
+            if len(all_title_idxs) > 1:
+                return "Did you mean:" + ", or \n".join(
+                    self.find_movies_title_by_idx(all_title_idxs)) + "?"
 
         user_idx = all_title_idxs[0]
         user_title = self.get_title(user_idx)
