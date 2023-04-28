@@ -33,7 +33,6 @@ class Chatbot:
         # TODO: put any other class variables you need here
         self.user_ratings = {}
         self.recommendations = []
-        self.next_recc = 0
 
     ############################################################################
     # 1. WARM UP REPL                                                          #
@@ -140,18 +139,7 @@ class Chatbot:
         # possibly calling other functions. Although your code is not graded   #
         # directly based on how modular it is, we highly recommended writing   #
         # code in a modular fashion to make it easier to improve and debug.    #
-        ########################################################################  
-        if self.next_recc >= len(self.recommendations):
-            self.goodbye()
-
-        if len(self.user_ratings) > 4 and not self.recommendations:
-            self.recommendations = self.recommend_movies(self.user_ratings)
-        elif self.recommendations:
-            print("Thanks! That's enough for me to make a recommendation. ")
-            print("I suggest you watch", self.recommendations[self.next_recc] + ".")
-            self.next_recc += 1
-            return "Would you like to hear another recommendation? (Or enter :quit if you're done.)"
-
+        ########################################################################
         # we extract the titles from the user input
         titles = self.extract_titles(line)
         # we extract all the movie indexes that are associated with user input
@@ -167,7 +155,7 @@ class Chatbot:
             # ask the user for clues for disambiguation
             print("Did you mean:")
             print(", or \n".join(
-                    self.find_movies_title_by_idx(all_title_idxs)) + "?")
+                self.find_movies_title_by_idx(all_title_idxs)) + "?")
 
             # get user input for clarification
             clarification = input("> ")
@@ -182,7 +170,25 @@ class Chatbot:
         # prompt the user about their input + ask them about their next choice.
         user_idx = all_title_idxs[0]
         user_title = self.get_title(user_idx)
-        self.user_ratings[user_idx] = self.predict_sentiment_statistical(user_title)
+        self.user_ratings[user_idx] = self.predict_sentiment_statistical(
+            user_title)
+        
+        if len(self.user_ratings) >= 5 and not self.recommendations:
+            self.recommendations = self.recommend_movies(self.user_ratings)
+            next_recc = 0
+            continue_recc = "yes"
+            print("Thanks! That's enough for me to make a recommendation. ")
+            while continue_recc != "no":
+                print("I suggest you watch",
+                      self.recommendations[next_recc] + ".")
+                print(
+                    "Would you like to hear another recommendation? (Or enter 'no' if you're done.)")
+                next_recc += 1
+                continue_recc = input("> ").lower()
+                if next_recc >= len(self.recommendations):
+                    return "That's all of the recommendations I have! Enter ':quit' if you're done."
+            return "It was nice chatting with you! Enter ':quit' if you're done."
+        
         return f"So you entered {user_title}. What is another movie you've watched?"
 
         ########################################################################
