@@ -141,8 +141,6 @@ class Chatbot:
         # directly based on how modular it is, we highly recommended writing   #
         # code in a modular fashion to make it easier to improve and debug.    #
         ########################################################################
-        # line = self.function1(line)
-
         if len(self.all_title_idxs) > 1:
             # Since all_title_idxs has not been modified yet this iteration of
             # the loop, if it has more than one element then we know we asked
@@ -171,7 +169,7 @@ class Chatbot:
 
         # Predict the sentiment of the user regarding the movie given their input
         user_idx = self.all_title_idxs[0]
-        self.user_ratings[user_idx] = self.predict_sentiment_statistical(self.function1(line))
+        self.user_ratings[user_idx] = self.predict_sentiment_statistical(line)
 
         if len(self.user_ratings) >= 5 and not self.recommendations:
             self.recommendations = self.recommend_movies(self.user_ratings)
@@ -190,7 +188,7 @@ class Chatbot:
             return "It was nice chatting with you! Enter ':quit' if you're done."
 
         # prompt the user about their input + ask them about their next choice.
-        return self.function2(line) + self.get_title(user_idx)
+        return f"So you entered {self.get_title(user_idx)}. What is another movie you've watched?"
 
         ########################################################################
         #                          END OF YOUR CODE                            #
@@ -579,136 +577,19 @@ class Chatbot:
     # 5. Open-ended                                                            #
     ############################################################################
 
-    def function1(self, sentence: str) -> str:
+    def function1(self, ):
         """
-        Function that performs basic spell checking on an input sentence. 
-        Function takes in an input sentence and returns a sentence with corrected spelling.
+        TODO: delete and replace with your function.
+        Be sure to put an adequate description in this docstring.
         """
-        # Importing packages
-        import re
-        import nltk
+        pass
 
-        nltk.download("words", quiet = True)
-        nltk.download("wordnet", quiet = True)
-        nltk.download("punkt", quiet = True)
-    
-        from nltk.corpus import words
-        from nltk.corpus import wordnet
-        from nltk.metrics.distance import edit_distance
-
-
-        # Obtaining a dictionary of english words that we treat as the set of correctly spelled words
-        wordnet_dict = set()
-        for synset in wordnet.all_synsets():
-            for lemma in synset.lemmas():
-                wordnet_dict.add(lemma.name())
-        words_dict = set(words.words())
-        dictionary = wordnet_dict | words_dict
-    
-        # Tokenizing all words in input sentence
-        # Capitalization is preserved in case word is in beginning of a sentence
-        pattern = r'"([^"]+)"|([\w]+)'
-        matches = re.findall(pattern, sentence)
-        tokens = [(match[1], match[1].lower()) 
-              for match in matches if match[1]]
-    
-        # Obtaining a list of all mispelled words 
-        mispelled = [(token, lowercase_token) 
-                 for token, lowercase_token in tokens 
-                 if lowercase_token not in dictionary]
-
-        # Obtaining closest word to mispelled word
-        suggestion = {}
-        for mis, lowercase_mis in mispelled:
-            suggestion[mis] = []
-            closest_dist = float('inf')
-            closest_word = None
-            word_len = len(lowercase_mis)
-
-            # For every word in dictionary, we compute the closest word to mispelled word in edit distance
-            # A penalty for character frequency difference is added
-            for word in dictionary:
-                if len(word) - 1 <= word_len <= len(word) + 1:
-                    distance = nltk.edit_distance(lowercase_mis, word, transpositions=True)
-                    if distance + self.char_freq_distance(lowercase_mis, word) <= closest_dist:
-                        if mis[0].isupper():
-                            closest_word = word.capitalize()
-                        else:
-                            closest_word = word
-                        suggestion[mis] = closest_word
-                        closest_dist = distance
-
-        # Correcting all mispelled words in original sentence              
-        for k, v in suggestion.items():
-            sentence = sentence.replace(k, v)
-        return sentence
-
-
-    def char_freq_distance(self, word_a, word_b) -> int:
+    def function2():
         """
-        Function computes an integer character frequency distance between two words.
-        It is a helper function for function1().
+        TODO: delete and replace with your function.
+        Be sure to put an adequate description in this docstring.
         """
-        from collections import Counter
-        word_a_freq = Counter(word_a)
-        word_b_freq = Counter(word_b)
-    
-        distance = 0
-        for char in set(word_a_freq.keys()) | set(word_b_freq.keys()):
-            distance += abs(word_a_freq[char] - word_b_freq[char])
-        
-        return distance
-        
-
-    def function2(self, line: str) -> str:
-        """
-        Function reads in a user input as string, and prints output according to user sentiment
-        In this function we use the sentiment SentimentIntensityAnalyzer class
-        in the nltk.sentiment package.
-
-        If user sentiment is neutral, then the output is a neutral statement
-        If user input is positve, the output printed to the user is positive, and so forth
-        """
-        import random
-        import nltk
-        nltk.download('vader_lexicon', quiet = True)
-
-        # We decided to use the SentimentIntensityAnalyzer from nltk.sentiment because
-        # the predict_sentiment_statistical was trained on less data and was not working well.
-        # we import this sentiment intensity classifies thta does a much better job.
-
-        from nltk.sentiment import SentimentIntensityAnalyzer
-        sia = SentimentIntensityAnalyzer()
-        # method polarity_scores returns a dict that has scores for neutral, negative, positive
-        sentiment = sia.polarity_scores(line)
-        # if positive
-        if sentiment['pos'] > sentiment['neg']:
-            # different ways to convey a positive sentiment
-            possible_positive_outputs = ["So you liked ", "So you loved ",
-            "So it sounds like you enjoyed ",
-            "If I'm understanding you correctly, you had a positive experience with ",
-            "It seems that you were a fan of ",
-            "It appears that you found a lot to like about ",
-            "So it's safe to say that you had a good opinion of ",
-            "It seems like you were impressed by "]
-            random_idx = random.randint(0,7)
-            return (possible_positive_outputs[random_idx])
-        # if negative
-        elif sentiment['neg'] > sentiment['pos'] and sentiment['neg'] > sentiment['neu']:
-            # different ways to convey a positive sentiment
-            possible_negative_outputs = ["I am sorry you did not like ",
-            "So you did not like ", "So it seems that you weren't a fan of ",
-            "If I'm understanding you correctly, you didn't enjoy ",
-            "It sounds like you had a negative experience with ",
-            "From what you've said, it appears that you didn't care for ",
-            "So it's safe to say that you didn't find much to like about "]
-            random_idx = random.randint(0,6)
-            return (possible_negative_outputs[random_idx])
-        # if neutral
-        else:
-            return ("So you entered ")       
-        
-
+        pass
 
     def function3():
         """
